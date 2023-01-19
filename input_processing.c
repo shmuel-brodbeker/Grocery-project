@@ -187,8 +187,8 @@ int found_filed (char **p)
 
 Select *check_select_query (char *input)
 {
-    Select *s_query = calloc(1, sizeof(Select));
-    if (!s_query)
+    Select *query = calloc(1, sizeof(Select));
+    if (!query)
     {
         puts("An error has occurred, try again.");
         return NULL; 
@@ -200,11 +200,11 @@ Select *check_select_query (char *input)
         p++;
     }
 
-    s_query->field = found_filed(&p);
-    if (s_query->field < 0)
+    query->field = found_filed(&p);
+    if (query->field < 0)
     {
         puts("Error. field name unidentified.");
-        free(s_query);
+        free(query);
         return NULL;
     }
 
@@ -212,7 +212,7 @@ Select *check_select_query (char *input)
     {
         p++;
     }
-    s_query->parameter = *p;
+    query->parameter = *p;
     if (*p == '!')
         p++;    
 
@@ -220,45 +220,47 @@ Select *check_select_query (char *input)
         p++;
     } while (*p == ' ');
 
-    switch(s_query->field)
+    switch(query->field)
     {
         case FIRST_N:
-            sscanf(p, "%19[^\t\n]", s_query->to_test_str);
-            check_name(s_query->to_test_str, strlen(s_query->to_test_str));
+            sscanf(p, "%19[^\t\n]", query->to_test_str);
+            check_name(query->to_test_str, strlen(query->to_test_str));
             break;
         case LAST_N:
-            sscanf(p, "%19[^\t\n]", s_query->to_test_str);
-            check_name(s_query->to_test_str, strlen(s_query->to_test_str));
+            sscanf(p, "%19[^\t\n]", query->to_test_str);
+            check_name(query->to_test_str, strlen(query->to_test_str));
             break;
         case ID:
-            sscanf(p, "%d", &s_query->to_test_num[0]);
-            if (s_query->to_test_num[0] <= 0)
+            sscanf(p, "%d", &query->to_test_num[0]);
+            if (query->to_test_num[0] < 0)
+            {
+                puts("Invalid ID");
                 goto err;
+            }
             break;
         case PHONE:
-            sscanf(p, "%19[^\t\n]", s_query->to_test_str);
+            sscanf(p, "%19[^\t\n]", query->to_test_str);
             break;
         case DEBT:
-            sscanf(p, "%d", &s_query->to_test_num[0]);
+            sscanf(p, "%d", &query->to_test_num[0]);
             break;
         case DATE:
-            sscanf(p, "%d%*c%d%*c%d", &s_query->to_test_num[0], 
-                    &s_query->to_test_num[1], &s_query->to_test_num[2]);
-            if (s_query->to_test_num[2] <= 0)
+            sscanf(p, "%d%*c%d%*c%d", &query->to_test_num[0], 
+                    &query->to_test_num[1], &query->to_test_num[2]);
+            if (check_date(query->to_test_num))
             {
-                puts("Invalid date");
+                puts("Invalid date. usage: **/**/****");
                 goto err;
             }
             break;
         default:
+            puts("Error. usage: <field name> <parameter: <, >, =, != > <your selection>");
             goto err;
     }
-
-    return s_query;
+    return query;
 
 err:
-    puts("Error. usage: <field name> <parameter: <, >, =, != > <your selection>");
-    free(s_query);
+    free(query);
     return NULL;
 }
 
