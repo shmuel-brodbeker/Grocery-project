@@ -232,6 +232,8 @@ Select *check_select_query (char *input)
             break;
         case ID:
             sscanf(p, "%d", &s_query->to_test_num[0]);
+            if (s_query->to_test_num[0] <= 0)
+                goto err;
             break;
         case PHONE:
             sscanf(p, "%19[^\t\n]", s_query->to_test_str);
@@ -242,6 +244,11 @@ Select *check_select_query (char *input)
         case DATE:
             sscanf(p, "%d%*c%d%*c%d", &s_query->to_test_num[0], 
                     &s_query->to_test_num[1], &s_query->to_test_num[2]);
+            if (s_query->to_test_num[2] <= 0)
+            {
+                puts("Invalid date");
+                goto err;
+            }
             break;
         default:
             goto err;
@@ -250,7 +257,7 @@ Select *check_select_query (char *input)
     return s_query;
 
 err:
-    puts("Error. usage: <field name> <parameter (<, >, =, !=)> <your selection>");
+    puts("Error. usage: <field name> <parameter: <, >, =, != > <your selection>");
     free(s_query);
     return NULL;
 }

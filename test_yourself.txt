@@ -1,4 +1,4 @@
-set first name=aaabbb, last name=aaaccc, id=777777777, phone=0571234567, date=3/4/2022, debt=3000
+set first name=aaabbb, last name=fff, id=777777777, phone=0571234567, date=3/4/2022, debt=3000
 
 set first name=david, second name=ddDDddd, id=789, phone=0544447777, date=6/8/2023, debt=-2000 
 

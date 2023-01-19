@@ -25,7 +25,10 @@ void get_query (List *head)
             Select *pro_query = check_select_query (query + strlen(command) + 1);
             if (pro_query)
             {
-                print_query (pro_query, head);
+                int counter = 0;
+                print_query (pro_query, head, &counter);
+                if (counter == 0)
+                    puts("No data found to display");
             }
         }
         else if (!strcmp(command, "set"))
