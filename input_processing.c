@@ -275,16 +275,16 @@ List *add_new_row (char *input)
     char *p = input;
     char *start = input;
     int sum_fields = 6;
-    int field = 0;
+    int cur_field = 0;
     int len = 0;
 
-    for (int i = 0; i < sum_fields; i++, field++, p++)
+    for (int i = 0; i < sum_fields; i++, p++)
     {
         while(*p == ' ')
         {
             p++;
         }
-        field = found_filed(&p);
+        cur_field = found_filed(&p);
         // p point now to '='
         do {
             p++;
@@ -294,7 +294,7 @@ List *add_new_row (char *input)
         len = 0;
         while (*p && *p != ',') 
         {
-            if (*p == '\n' && sum_fields < 5)
+            if (*p == '\n' && i < 5 )
             {
                 puts("Too few fields");
                 goto err;
@@ -303,9 +303,10 @@ List *add_new_row (char *input)
         }
         if (len == 0) 
         {
+            puts("Error. empty field");
             goto err;
         }
-        switch (field)
+        switch (cur_field)
         {
             case FIRST_N:
                 strncpy(new->first_name, start, len);

@@ -1,3 +1,6 @@
+compile: input.o input_processing.o db_operations.o
+	gcc -g input.o input_processing.o db_operations.o -o grocery
+
 run: input.o input_processing.o db_operations.o
 	gcc -g input.o input_processing.o db_operations.o -o grocery && ./grocery db3.csv
 
@@ -12,6 +15,9 @@ db_operations.o: db_operations.c
 
 gdb:
 	gdb --args ./grocery db3.csv
+
+valgrind:
+	valgrind --leak-check=yes ./grocery db3.csv
 
 clean:
 	rm -f *.o 

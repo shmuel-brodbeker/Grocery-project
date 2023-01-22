@@ -7,7 +7,7 @@
 
 #define LINE "============="
 
-void get_query (List *head)
+void get_query (List **head)
 {
     char menu[] = {"Enter a query <quit for exit>"};
     char query[200];
@@ -16,6 +16,8 @@ void get_query (List *head)
     while(1)
     {
         memset(query, 0, sizeof(query));
+        memset(command, 0, sizeof(command));
+
         printf("\n%s\n-->", menu);
         fgets(query, sizeof(query), stdin);
         sscanf(query, "%s", command);
@@ -26,7 +28,7 @@ void get_query (List *head)
             if (pro_query)
             {
                 int counter = 0;
-                print_query (pro_query, head, &counter);
+                print_query (pro_query, *head, &counter);
                 if (counter == 0)
                     puts("No data found to display");
             }
@@ -36,13 +38,13 @@ void get_query (List *head)
             List *new = add_new_row(query + strlen(command) + 1);
             if (new)
             {
-                new = is_id_exist(new, &head);
-                add_to_list (new, &head);
+                new = is_id_exist(new, head);
+                add_to_list (new, head);
             }
         }
         else if (!strcmp(command, "print"))
         {
-            print_list(head);
+            print_list(*head);
         }
         else if (!strcmp(command, "quit"))
         {
@@ -95,10 +97,10 @@ int main (int argc, char **argv)
     print_list(head);
     printf("%s%s%s\n", LINE, LINE, LINE);
 
-    get_query(head);
+    get_query(&head);
 
     // list_to_file(head, argv[1]);
-    free_list(head);   
+    free_list(head);
     
     return 0;
 }
