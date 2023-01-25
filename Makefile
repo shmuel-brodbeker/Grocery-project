@@ -10,6 +10,9 @@ run: input.o input_processing.o db_operations.o
 run_server: server.o input_processing.o db_operations.o
 	@gcc -g server.o -lpthread input_processing.o db_operations.o -o server && ./server db3.csv 12345
 
+run_client: client.o
+	gcc -g client.o -o client && ./client 12345
+
 server: server.o input_processing.o db_operations.o
 	gcc -g server.o -lpthread input_processing.o db_operations.o -o server
 
@@ -17,10 +20,10 @@ server.o: server.c
 	gcc -g -c -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast server.c 
 
 client: client.o
-	gcc -g client.o 
+	gcc -g client.o -o client
 
 client.o: client.c
-	gcc -g client.c 
+	gcc -g -c client.c 
 
 input.o: input.c
 	gcc -g -c input.c 
@@ -37,5 +40,5 @@ gdb:
 valgrind:
 	valgrind --leak-check=yes ./grocery db3.csv
 
-clean:
+clear:
 	rm -f *.o grocery server client
