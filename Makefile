@@ -1,8 +1,17 @@
 compile: input.o input_processing.o db_operations.o
 	gcc -g input.o input_processing.o db_operations.o -o grocery
 
+Wall: input.o input_processing.o db_operations.o
+	gcc -Wall -g input.o input_processing.o db_operations.o -o grocery
+
 run: input.o input_processing.o db_operations.o
-	gcc -g input.o input_processing.o db_operations.o -o grocery && ./grocery db3.csv
+	@gcc -g input.o input_processing.o db_operations.o -o grocery && ./grocery db3.csv
+
+server: 
+	gcc -g server.c -o server
+
+client:
+	gcc -g client.c -o client
 
 input.o: input.c
 	gcc -g -c input.c 
@@ -20,4 +29,4 @@ valgrind:
 	valgrind --leak-check=yes ./grocery db3.csv
 
 clean:
-	rm -f *.o 
+	rm -f *.o grocery

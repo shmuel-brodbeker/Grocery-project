@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NAME_LEN 15
+
 typedef struct _List {
-    char first_name[15];
-    char last_name[15];
+    char first_name[NAME_LEN];
+    char last_name[NAME_LEN];
     char phone[11];
     struct _List *next;
     int date[3]; // "01/01/2023"
@@ -16,7 +18,7 @@ typedef struct _Select {
     int field;
     int to_test_num[3];
     char parameter;
-    char to_test_str[20];
+    char to_test_str[NAME_LEN];
 } Select;
 
 enum FIELDS {
