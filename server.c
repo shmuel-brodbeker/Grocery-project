@@ -9,7 +9,7 @@
 
 int main (int argc, char **argv)
 {
-    List *head = NULL, *tail = NULL;
+    List *head = NULL;
 
     if (argc < 2)
     {
@@ -23,7 +23,7 @@ int main (int argc, char **argv)
         puts("File not found");
         return 1;
     }
-    read_file(file, &head, &tail);
+    read_file(file, &head);
     fclose(file);
 
     // ------------------------------------------

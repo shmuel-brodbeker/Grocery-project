@@ -169,7 +169,7 @@ void add_to_list (List *row, List **head)
     }
 }
 
-void read_file (FILE *file, List **head, List **tail)
+void read_file (FILE *file, List **head)
 {
     char input[250] = {0};
     List *row = NULL;
