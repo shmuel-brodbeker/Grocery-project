@@ -8,13 +8,13 @@ run: input.o input_processing.o db_operations.o
 	@gcc -g input.o input_processing.o db_operations.o -o grocery && ./grocery db3.csv
 
 run_server: server.o input_processing.o db_operations.o
-	@gcc -g server.o input_processing.o db_operations.o -o server && ./server db3.csv
+	@gcc -g server.o -lpthread input_processing.o db_operations.o -o server && ./server db3.csv 12345
 
 server: server.o input_processing.o db_operations.o
-	gcc -g server.o input_processing.o db_operations.o -o server
+	gcc -g server.o -lpthread input_processing.o db_operations.o -o server
 
 server.o: server.c
-	gcc -g -c server.c 
+	gcc -g -c -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast server.c 
 
 client: client.o
 	gcc -g client.o 
