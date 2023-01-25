@@ -58,22 +58,6 @@ void get_query (List **head)
     }
 }
 
-void read_file (FILE *file, List **head, List **tail)
-{
-    char input[250] = {0};
-    List *row = NULL;
-
-    while (fgets(input, sizeof(input), file))
-    {
-        row = processing_file(input, sizeof(input));
-        if (row)
-        {
-            row = is_id_exist(row, head);
-            add_to_list (row, head);
-        }
-    }
-}
-
 int main (int argc, char **argv)
 {
     List *head = NULL, *tail = NULL;

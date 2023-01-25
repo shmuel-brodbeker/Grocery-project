@@ -7,11 +7,20 @@ Wall: input.o input_processing.o db_operations.o
 run: input.o input_processing.o db_operations.o
 	@gcc -g input.o input_processing.o db_operations.o -o grocery && ./grocery db3.csv
 
-server: 
-	gcc -g server.c -o server
+run_server: server.o input_processing.o db_operations.o
+	@gcc -g server.o input_processing.o db_operations.o -o server && ./server db3.csv
 
-client:
-	gcc -g client.c -o client
+server: server.o input_processing.o db_operations.o
+	gcc -g server.o input_processing.o db_operations.o -o server
+
+server.o: server.c
+	gcc -g -c server.c 
+
+client: client.o
+	gcc -g client.o 
+
+client.o: client.c
+	gcc -g client.c 
 
 input.o: input.c
 	gcc -g -c input.c 
@@ -29,4 +38,4 @@ valgrind:
 	valgrind --leak-check=yes ./grocery db3.csv
 
 clean:
-	rm -f *.o grocery
+	rm -f *.o grocery server client
