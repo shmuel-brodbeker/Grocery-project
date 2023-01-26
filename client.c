@@ -62,6 +62,15 @@ int main(int argc, char **argv)
                 }
                 return 0;
             }
+            // if (!strncmp(buffer[i], "send", 4))
+            // {
+            //     break;
+            // }
+            // // if (strlen(buffer[i]) < 2)
+            // {
+            //     i--;
+            //     continue;
+            // }
         }
 
         for (i = 0; i < 5; i++)

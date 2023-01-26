@@ -21,21 +21,24 @@ int insert_node_to_buf (char *buf, int rest, List *node)
     snprintf(x, MAX_LEN, "%s %s, %s, ID: %09d\n\t-> debt: %d \n\t-> date: %d/%d/%d \n",
         node->first_name, node->last_name, node->phone, node->id,
         node->debt, node->date[0], node->date[1], node->date[2]);
-    strncpy(buf, x, strlen(x)); // MAX_LEN ?
+    strncpy(buf, x, MIN_OF(strlen(x), rest)); 
     return strlen(x); 
 }
 
-void insert_list_to_buf (char *buf, int start)
+void insert_list_to_buf (char *buf, int buf_len)
 {
     List *temp = head;
     int len = 0;
-    memset (buf, 0, sizeof(buf));
+    memset (buf, 0, buf_len);
 
     while (temp)
     {
-        len += insert_node_to_buf(buf + len, 0, temp); // --- 0 ---
+        len += insert_node_to_buf(buf + len, buf_len - len, temp); 
         temp = temp->next;
+        // if (rest <= 0) // Enlarge array ?
+        //     break;
     }
+    buf[len] = '\0';
 }
 
 void send_for_processing (char *buffer, int max_len)
@@ -73,21 +76,7 @@ void send_for_processing (char *buffer, int max_len)
             snprintf(buffer, MAX_LEN, "List is empty\n");
             return;
         }
-        insert_list_to_buf (buffer, 0);
-
-        // print_list(head); // --------------------------------
-        // snprintf(buffer, MAX_LEN, "Print list:\n");
-        // int r = 0, n = 0;
-        // do {
-        //     n = recv(new_sock, buffer + r, MAX_LEN - r, 0);
-        //     if (n < 0)
-        //     {
-        //         perror("Server error receiving data");
-        //         return 1;
-        //     }
-        //     r += n;
-        // } while (n);
-        
+        insert_list_to_buf (buffer, MAX_LEN);
     }
     else
     {
@@ -112,8 +101,6 @@ void *conn_handler(void *args)
     // ----------------------------------
         send_for_processing(buffer, MAX_LEN); 
     // ----------------------------------
-
-    // printf("Server received: %s\n", buffer); // ---- debug ----
 
     n = send(new_sock, buffer, strlen(buffer), 0);
     if (n < 0)
