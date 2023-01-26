@@ -10,9 +10,33 @@
 #include "input_processing.h"
 
 #define MAX_LEN 1024
+#define MIN_OF(_a, _b) ((_a < _b) ? _a : _b)
 #define LINE "============="
 
 List *head = NULL; // global head
+
+int insert_node_to_buf (char *buf, int rest, List *node)
+{
+    char x[MAX_LEN] = {0};
+    snprintf(x, MAX_LEN, "%s %s, %s, ID: %09d\n\t-> debt: %d \n\t-> date: %d/%d/%d \n",
+        node->first_name, node->last_name, node->phone, node->id,
+        node->debt, node->date[0], node->date[1], node->date[2]);
+    strncpy(buf, x, strlen(x)); // MAX_LEN ?
+    return strlen(x); 
+}
+
+void insert_list_to_buf (char *buf, int start)
+{
+    List *temp = head;
+    int len = 0;
+    memset (buf, 0, sizeof(buf));
+
+    while (temp)
+    {
+        len += insert_node_to_buf(buf + len, 0, temp); // --- 0 ---
+        temp = temp->next;
+    }
+}
 
 void send_for_processing (char *buffer, int max_len)
 {
@@ -44,8 +68,26 @@ void send_for_processing (char *buffer, int max_len)
     }
     else if (!strcmp(command, "print"))
     {
-        print_list(head); // --------------------------------
-        snprintf(buffer, MAX_LEN, "Print list:\n");
+        if (!head)
+        {
+            snprintf(buffer, MAX_LEN, "List is empty\n");
+            return;
+        }
+        insert_list_to_buf (buffer, 0);
+
+        // print_list(head); // --------------------------------
+        // snprintf(buffer, MAX_LEN, "Print list:\n");
+        // int r = 0, n = 0;
+        // do {
+        //     n = recv(new_sock, buffer + r, MAX_LEN - r, 0);
+        //     if (n < 0)
+        //     {
+        //         perror("Server error receiving data");
+        //         return 1;
+        //     }
+        //     r += n;
+        // } while (n);
+        
     }
     else
     {
@@ -116,7 +158,7 @@ int get_query (int port)
     }
 
     /* Receive data from clients */
-    while (1) // for (int i = 0; i < 5; i++)
+    while (1)
     {
         pthread_t tid;
         int new_sock = accept(sockfd, (struct sockaddr *)&client_addr, (socklen_t*)&len);
