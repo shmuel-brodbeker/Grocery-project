@@ -86,8 +86,6 @@ exit:
 
 int get_query (int port)
 {
-while (1)
-{
     int sockfd;
     struct sockaddr_in server_addr, client_addr;
     socklen_t len = sizeof(client_addr);
@@ -118,8 +116,7 @@ while (1)
     }
 
     /* Receive data from clients */
-    // while (1)
-    for (int i = 0; i < 5; i++)
+    while (1) // for (int i = 0; i < 5; i++)
     {
         pthread_t tid;
         int new_sock = accept(sockfd, (struct sockaddr *)&client_addr, (socklen_t*)&len);
@@ -132,7 +129,8 @@ while (1)
         pthread_create(&tid, NULL, conn_handler, (void *)new_sock);
         pthread_join(tid, NULL);
     }
-}
+    
+
     return 0;
 }
 
