@@ -12,11 +12,52 @@
 #define MAX_LEN 1024
 #define LINE "============="
 
+List *head = NULL; // global head
+
+void send_for_processing (char *buffer, int max_len)
+{
+    char command[30] = {0};
+    sscanf(buffer, "%s", command);
+
+    if (!strcmp(command, "select"))
+    {
+        // Select *pro_query = check_select_query (buffer + strlen(command) + 1);
+        // if (pro_query)
+        // {
+        //     int counter = 0;
+        //     print_query (pro_query, head, &counter);
+        //     if (counter == 0)
+        //         puts("No data found to display");
+        // }
+    }
+    else if (!strcmp(command, "set"))
+    {
+        List *new = add_new_row(buffer + strlen(command) + 1);
+        if (new)
+        {
+            new = is_id_exist(new, &head);
+            add_to_list (new, &head);
+            snprintf(buffer, MAX_LEN, "New record added successfully\n");
+            return;
+        }
+        snprintf(buffer, MAX_LEN, "Error. New record not added\n");
+    }
+    else if (!strcmp(command, "print"))
+    {
+        print_list(head); // --------------------------------
+        snprintf(buffer, MAX_LEN, "Print list:\n");
+    }
+    else
+    {
+        snprintf(buffer, MAX_LEN, "Query word unidentified. Usage: select, set, print, quit\n");
+    }
+}
+
 void *conn_handler(void *args)
 {
     char buffer[MAX_LEN];
     int n;
-    int new_sock = (int)args; // ignore the compiler warning
+    int new_sock = (int)args; 
 
     n = recv(new_sock, buffer, MAX_LEN, 0);
     if (n < 0)
@@ -26,22 +67,26 @@ void *conn_handler(void *args)
     }
     buffer[n] = '\0';
 
-    
-    // printf("Server received: %s\n", buffer); // -------
+    // ----------------------------------
+        send_for_processing(buffer, MAX_LEN); 
+    // ----------------------------------
 
-    // strcpy(buffer, "Thanks from TCP server!");
-    // n = send(new_sock, buffer, strlen(buffer), 0);
-    // if (n < 0)
-    // {
-    //     perror("Server error sending data");
-    //     goto exit;
-    // }
+    // printf("Server received: %s\n", buffer); // ---- debug ----
+
+    n = send(new_sock, buffer, strlen(buffer), 0);
+    if (n < 0)
+    {
+        perror("Server error sending data");
+        goto exit;
+    }
 exit:
     close(new_sock);
     return NULL;
 }
 
 int get_query (int port)
+{
+while (1)
 {
     int sockfd;
     struct sockaddr_in server_addr, client_addr;
@@ -73,7 +118,8 @@ int get_query (int port)
     }
 
     /* Receive data from clients */
-    while (1)
+    // while (1)
+    for (int i = 0; i < 5; i++)
     {
         pthread_t tid;
         int new_sock = accept(sockfd, (struct sockaddr *)&client_addr, (socklen_t*)&len);
@@ -86,13 +132,13 @@ int get_query (int port)
         pthread_create(&tid, NULL, conn_handler, (void *)new_sock);
         pthread_join(tid, NULL);
     }
+}
     return 0;
 }
 
 
 int main (int argc, char **argv)
 {
-    List *head = NULL;
     if (argc < 3)
     {
         printf("Usage: %s <db.csv> <port>\n", argv[0]);

@@ -47,14 +47,19 @@ int main(int argc, char **argv)
             }
         }
 
-        puts("Enter five commands:");
-        puts("Usage: select, set, print, quit");
+        memset(buffer, 0, sizeof(buffer));
+        puts("\nEnter five commands. Begin with: select, set, print, quit\n");
+        
         for (i = 0; i < 5; i++)
         {
             fgets(buffer[i], MAX_LEN, stdin);
             if (!strncmp(buffer[i], "quit", 4))
             {
                 puts ("Exiting... have a good day");
+                for (int j = 0; j < 5; j++)
+                {
+                    close(sockfd[j]); // dose i need to close befor exiting
+                }
                 return 0;
             }
         }
@@ -69,7 +74,7 @@ int main(int argc, char **argv)
             }
         }
 
-    /* ---------- waiting for answer ---------- */
+    /* ---------- Waiting for reply ---------- */
 
         for (i = 0; i < 5; i++)
         {
@@ -79,8 +84,8 @@ int main(int argc, char **argv)
                 perror("Client error receiving data");
                 return 1;
             }
-            buffer[i][n] = '\0'; //
-            printf("Query num %d:\n %s\n", i, buffer[i]);
+            buffer[i][n] = '\0'; 
+            printf("Query %d:\n%s\n", i, buffer[i]);
 
             close(sockfd[i]);
         }

@@ -74,7 +74,7 @@ int main (int argc, char **argv)
         puts("File not found");
         return 1;
     }
-    read_file(file, &head, &tail);
+    read_file(file, &head);
     fclose(file);
 
     printf("\n%s List of debt %s\n", LINE, LINE);
