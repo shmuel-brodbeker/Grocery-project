@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                 return 1;
             }
             buffer[i][n] = '\0'; 
-            printf("Query %d:\n%s\n", i, buffer[i]);
+            printf("Query %d:\n %s\n", i, buffer[i]);
 
             close(sockfd[i]);
         }

@@ -29,8 +29,9 @@ enum FIELDS {
     DATE
 };
 
+void print_node(List *head);
 void print_list (List *head);
-void print_query (Select *pro_query, List *head, int *counter);
+int printing_approved (Select *pro_query, List *head);
 void add_to_list (List *row, List **head);
 List *is_id_exist(List *row, List **head);
 void read_file (FILE *file, List **head);

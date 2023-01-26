@@ -7,6 +7,19 @@
 
 #define LINE "============="
 
+void print_query (Select *pro_query, List *head, int *counter)
+{
+    while (head)
+    {
+        if (printing_approved(pro_query, head) == 0)
+        {
+            print_node (head);
+            (*counter)++;
+        }
+        head = head->next;
+    }
+}
+
 void get_query (List **head)
 {
     char menu[] = {"Enter a query <quit for exit>"};

@@ -25,6 +25,17 @@ int insert_node_to_buf (char *buf, int rest, List *node)
     return strlen(x); 
 }
 
+void insert_selection_to_buf (char *buf, int buf_len, Select *selection, int *counter)
+{
+    List *temp = head;
+    memset (buf, 0, buf_len);
+    while (temp)
+    {
+        
+        temp = temp->next;
+    }
+}
+
 void insert_list_to_buf (char *buf, int buf_len)
 {
     List *temp = head;
@@ -48,14 +59,24 @@ void send_for_processing (char *buffer, int max_len)
 
     if (!strcmp(command, "select"))
     {
-        // Select *pro_query = check_select_query (buffer + strlen(command) + 1);
-        // if (pro_query)
-        // {
-        //     int counter = 0;
-        //     print_query (pro_query, head, &counter);
-        //     if (counter == 0)
-        //         puts("No data found to display");
-        // }
+        if (!head)
+        {
+            snprintf(buffer, MAX_LEN, "List is empty\n");
+            return;
+        }
+        Select *selection = check_select_query (buffer + strlen(command) + 1);
+        if (selection)
+        {
+            int counter = 0;
+            insert_selection_to_buf (buffer, MAX_LEN, selection, &counter);
+            if (counter == 0)
+                snprintf(buffer, MAX_LEN, "No data found to display\n");
+        }
+        else
+        {
+            snprintf(buffer, MAX_LEN, "Error. Usage: <field name> <parameter: <, >, =, != > <your selection>\n");
+            return;
+        }
     }
     else if (!strcmp(command, "set"))
     {
@@ -97,10 +118,7 @@ void *conn_handler(void *args)
         goto exit;
     }
     buffer[n] = '\0';
-
-    // ----------------------------------
-        send_for_processing(buffer, MAX_LEN); 
-    // ----------------------------------
+    send_for_processing(buffer, MAX_LEN); 
 
     n = send(new_sock, buffer, strlen(buffer), 0);
     if (n < 0)
@@ -158,11 +176,8 @@ int get_query (int port)
         pthread_create(&tid, NULL, conn_handler, (void *)new_sock);
         pthread_join(tid, NULL);
     }
-    
-
     return 0;
 }
-
 
 int main (int argc, char **argv)
 {
@@ -189,7 +204,7 @@ int main (int argc, char **argv)
     
     get_query(atoi(argv[2]));
     
-    free_list(head);
+    free_list(head); // exit function
     
     return 0;
 }

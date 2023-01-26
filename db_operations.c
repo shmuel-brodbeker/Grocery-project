@@ -39,21 +39,19 @@ int cmp_date (int a[3], int b[3])
     }
 }
 
-void print_node(List *head, int *counter)
+void print_node(List *head)
 {
     if (!head)
         return;
     printf("%s %s, %s, ID: %09d  \n  ", head->first_name, head->last_name, head->phone, head->id);
     printf("\t-> debt: %d \n\t-> date: %d/%d/%d \n",head->debt, head->date[0], head->date[1], head->date[2]);
-    if (counter)
-        (*counter)++;
 }
 
 void print_list (List *head)
 {
     if (!head)
         return;
-    print_node(head, 0);
+    print_node(head);
     print_list(head->next);
 }
 
@@ -74,39 +72,33 @@ int cmp (int res, char parameter)
     }
 }
 
-void print_query (Select *pro_query, List *head, int *counter)
+int printing_approved (Select *pro_query, List *head)
 {
     if (!head)
-        return;
+        return 1;
 
     switch (pro_query->field)
     {
         case FIRST_N:
             if (!cmp (strcmp(head->first_name, pro_query->to_test_str), pro_query->parameter))
-                print_node(head, counter);
-            break;
+                return 0;
         case LAST_N:
             if (!cmp (strcmp(head->last_name, pro_query->to_test_str), pro_query->parameter))
-                print_node(head, counter);
-            break;
+                return 0;
         case ID:
             if (!cmp(head->id - pro_query->to_test_num[0], pro_query->parameter))
-                print_node(head, counter);
-            break;
+                return 0;
         case PHONE:
             if (!cmp (strcmp(head->phone, pro_query->to_test_str), pro_query->parameter))
-                print_node(head, counter);
-            break;
+                return 0;
         case DEBT:
             if (!cmp(head->debt - pro_query->to_test_num[0], pro_query->parameter))
-                print_node(head, counter);
-            break;
+                return 0;
         case DATE:
             if (!cmp(cmp_date(head->date, pro_query->to_test_num), pro_query->parameter))
-                print_node(head, counter);
-            break;
+                return 0;
     }
-    print_query(pro_query, head->next, counter);
+    return 1;
 }
 
 void update_row (List *a, List *b)
