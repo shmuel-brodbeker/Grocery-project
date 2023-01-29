@@ -88,14 +88,17 @@ int main(int argc, char **argv)
         puts("\n========= server sending ==========");
         for (j = 0; j < i; j++)
         {
-            n = recv(sockfd[j], buffer[j], MAX_LEN, 0); // do.. while (n == 0)
-            if (n < 0)
-            {
-                perror("Client error receiving data");
-                return 1;
-            }
-            buffer[j][n] = '\0'; 
-            printf(" Query %d:\n%s\n", j+1, buffer[j]);
+            printf(" Query %d:\n", j+1);
+            do {
+                n = recv(sockfd[j], buffer[j], MAX_LEN, 0);
+                if (n < 0)
+                {
+                    perror("Client error receiving data");
+                    break; // return 1 ?
+                }
+                buffer[j][n] = '\0'; 
+                printf("%s\n", buffer[j]);
+            } while (n > 0);
         }
 
         for (i = 0; i < 5; i++)
