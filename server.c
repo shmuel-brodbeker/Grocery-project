@@ -25,39 +25,90 @@ int insert_node_to_buf (char *buf, int rest, List *node)
     return strlen(x); 
 }
 
-void insert_selection_to_buf (char *buf, int buf_len, Select *selection, int *counter)
-{
-    List *temp = head;
-    int len = 0;
-    memset (buf, 0, buf_len);
+// void insert_selection_to_buf (char *buf, int buf_len, Select *selection, int *counter)
+// {
+//     List *temp = head;
+//     int len = 0;
+//     memset (buf, 0, buf_len);
 
-    while (temp)
+//     while (temp)
+//     {
+//         if (printing_approved(selection, temp) == 0)
+//         {
+//             len += insert_node_to_buf (buf + len, buf_len - len, temp);
+//             (*counter)++;
+//         }
+//         temp = temp->next;
+//     }
+//     buf[len] = '\0';
+// }
+
+// void insert_list_to_buf (char *buf, int buf_len)
+// {
+//     List *temp = head;
+//     int len = 0;
+//     memset (buf, 0, buf_len);
+
+//     while (temp)
+//     {
+//         len += insert_node_to_buf(buf + len, buf_len - len, temp); 
+//         temp = temp->next;
+//     }
+//     buf[len] = '\0';
+// }
+
+void send_selection (List *head, int socket, Select *selection, int *counter)
+{
+    char buf [MAX_LEN];
+    int len, n;
+    while (head)
     {
-        if (printing_approved(selection, temp) == 0)
+        memset (buf, 0, sizeof(buf));
+        for (int i = 0, len = 0; i < 5; i++) // send 5 lines together
         {
-            len += insert_node_to_buf (buf + len, buf_len - len, temp);
-            (*counter)++;
+            if (!head)
+                break;
+
+            if (printing_approved(selection, head) == 0)
+            {
+                len += insert_node_to_buf(buf + len, MAX_LEN - len, head); 
+                (*counter)++;
+            }
+            head = head->next;
         }
-        temp = temp->next;
+        n = send (socket, buf, strlen(buf), 0);
+        if (n < 0)
+        {
+            perror("Server error sending data");
+            close(socket);
+        }
     }
-    buf[len] = '\0';
 }
 
-void insert_list_to_buf (char *buf, int buf_len)
+void send_list (List *head, int socket)
 {
-    List *temp = head;
-    int len = 0;
-    memset (buf, 0, buf_len);
-
-    while (temp)
+    char buf [MAX_LEN];
+    int len, n;
+    while (head)
     {
-        len += insert_node_to_buf(buf + len, buf_len - len, temp); 
-        temp = temp->next;
+        memset (buf, 0, sizeof(buf));
+        for (int i = 0, len = 0; i < 5; i++) // send 5 lines together
+        {
+            if (!head)
+                break;
+            len += insert_node_to_buf(buf + len, MAX_LEN - len, head); 
+            head = head->next;
+        }
+        n = send (socket, buf, strlen(buf), 0);
+        if (n < 0)
+        {
+            perror("Server error sending data");
+            close(socket);
+        }
     }
-    buf[len] = '\0';
 }
 
-void send_for_processing (char *buffer, int max_len)
+void send_for_processing (char *buffer, int max_len, int socket)
 {
     char command[30] = {0};
     sscanf(buffer, "%s", command);
@@ -73,9 +124,13 @@ void send_for_processing (char *buffer, int max_len)
         if (selection)
         {
             int counter = 0;
-            insert_selection_to_buf (buffer, MAX_LEN, selection, &counter);
+            // insert_selection_to_buf (buffer, MAX_LEN, selection, &counter);
+            send_selection (head, socket, selection, &counter);
+            
             if (counter == 0)
                 snprintf(buffer, MAX_LEN, "No data found to display\n");
+            else
+                snprintf(buffer, MAX_LEN, "\n============ End list ===========\n");
         }
         else
         {
@@ -102,7 +157,9 @@ void send_for_processing (char *buffer, int max_len)
             snprintf(buffer, MAX_LEN, "List is empty\n");
             return;
         }
-        insert_list_to_buf (buffer, MAX_LEN);
+        // insert_list_to_buf (buffer, MAX_LEN);
+        send_list (head, socket);
+        snprintf(buffer, MAX_LEN, "\n============ End list ===========\n");
     }
     else
     {
@@ -123,7 +180,7 @@ void *conn_handler(void *args)
         goto exit;
     }
     buffer[n] = '\0';
-    send_for_processing(buffer, MAX_LEN); 
+    send_for_processing(buffer, MAX_LEN, new_sock); 
 
     n = send(new_sock, buffer, strlen(buffer), 0);
     if (n < 0)

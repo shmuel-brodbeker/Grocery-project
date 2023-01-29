@@ -83,21 +83,23 @@ int main(int argc, char **argv)
             }
         }
 
-    /* ---------- Waiting for reply ---------- */
+        /* ---------- Waiting for reply ---------- */
 
         puts("\n========= server sending ==========");
         for (j = 0; j < i; j++)
         {
             printf(" Query %d:\n", j+1);
+            
             do {
                 n = recv(sockfd[j], buffer[j], MAX_LEN, 0);
                 if (n < 0)
                 {
                     perror("Client error receiving data");
-                    break; // return 1 ?
+                    break; 
                 }
                 buffer[j][n] = '\0'; 
                 printf("%s\n", buffer[j]);
+                memset(buffer, 0, sizeof(buffer));
             } while (n > 0);
         }
 
