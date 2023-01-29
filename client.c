@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     struct sockaddr_in server_addr;
     char buffer[5][MAX_LEN];
     int n;
-    int i;
+    int i, j;
 
     if (argc < 2)
     {
@@ -62,20 +62,20 @@ int main(int argc, char **argv)
                 }
                 return 0;
             }
-            // if (!strncmp(buffer[i], "send", 4))
-            // {
-            //     break;
-            // }
-            // // if (strlen(buffer[i]) < 2)
-            // {
-            //     i--;
-            //     continue;
-            // }
+            if (!strncmp(buffer[i], "send", 4))
+            {
+                break;
+            }
+            if (strlen(buffer[i]) < 2)
+            {
+                i--;
+                continue;
+            }
         }
 
-        for (i = 0; i < 5; i++)
+        for (j = 0; j < i; j++)
         {
-            n = send(sockfd[i], buffer[i], strlen(buffer[i]) - 1, 0);
+            n = send(sockfd[j], buffer[j], strlen(buffer[j]) - 1, 0);
             if (n < 0)
             {
                 perror("Client error sending data");
@@ -85,17 +85,21 @@ int main(int argc, char **argv)
 
     /* ---------- Waiting for reply ---------- */
 
-        for (i = 0; i < 5; i++)
+        puts("\n========= server sending ==========");
+        for (j = 0; j < i; j++)
         {
-            n = recv(sockfd[i], buffer[i], MAX_LEN, 0);
+            n = recv(sockfd[j], buffer[j], MAX_LEN, 0); // do.. while (n == 0)
             if (n < 0)
             {
                 perror("Client error receiving data");
                 return 1;
             }
-            buffer[i][n] = '\0'; 
-            printf("Query %d:\n %s\n", i, buffer[i]);
+            buffer[j][n] = '\0'; 
+            printf(" Query %d:\n%s\n", j+1, buffer[j]);
+        }
 
+        for (i = 0; i < 5; i++)
+        {
             close(sockfd[i]);
         }
     }

@@ -57,6 +57,8 @@ void print_list (List *head)
 
 int cmp (int res, char parameter)  
 {
+    // Gets a comparison result
+    // and returns if to print
     switch (parameter)
     {
         case '<':
@@ -82,18 +84,23 @@ int printing_approved (Select *pro_query, List *head)
         case FIRST_N:
             if (!cmp (strcmp(head->first_name, pro_query->to_test_str), pro_query->parameter))
                 return 0;
+            break;
         case LAST_N:
             if (!cmp (strcmp(head->last_name, pro_query->to_test_str), pro_query->parameter))
                 return 0;
+            break;
         case ID:
             if (!cmp(head->id - pro_query->to_test_num[0], pro_query->parameter))
                 return 0;
+            break;
         case PHONE:
             if (!cmp (strcmp(head->phone, pro_query->to_test_str), pro_query->parameter))
                 return 0;
+            break;
         case DEBT:
             if (!cmp(head->debt - pro_query->to_test_num[0], pro_query->parameter))
                 return 0;
+            break;
         case DATE:
             if (!cmp(cmp_date(head->date, pro_query->to_test_num), pro_query->parameter))
                 return 0;

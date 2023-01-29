@@ -28,12 +28,19 @@ int insert_node_to_buf (char *buf, int rest, List *node)
 void insert_selection_to_buf (char *buf, int buf_len, Select *selection, int *counter)
 {
     List *temp = head;
+    int len = 0;
     memset (buf, 0, buf_len);
+
     while (temp)
     {
-        
+        if (printing_approved(selection, temp) == 0)
+        {
+            len += insert_node_to_buf (buf + len, buf_len - len, temp);
+            (*counter)++;
+        }
         temp = temp->next;
     }
+    buf[len] = '\0';
 }
 
 void insert_list_to_buf (char *buf, int buf_len)
@@ -46,8 +53,6 @@ void insert_list_to_buf (char *buf, int buf_len)
     {
         len += insert_node_to_buf(buf + len, buf_len - len, temp); 
         temp = temp->next;
-        // if (rest <= 0) // Enlarge array ?
-        //     break;
     }
     buf[len] = '\0';
 }
@@ -204,7 +209,7 @@ int main (int argc, char **argv)
     
     get_query(atoi(argv[2]));
     
-    free_list(head); // exit function
+    free_list(head); // need to do an exit function
     
     return 0;
 }
