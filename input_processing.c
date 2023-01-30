@@ -62,6 +62,20 @@ int check_id (char *start)
     return 0;
 }
 
+int check_debt (char *start, int len)
+{
+    char *p = start;
+    for (int i = 0; i < len; i++, p++)
+    {
+        if (i == 0 && *p == '-' && len > 1)
+            continue;
+        
+        if (*p < '0' || *p > '9')
+            return 1;
+    }
+    return 0;
+}
+
 int check_date (int *date)
 {
     int d = date[0], m = date[1], y = date[2];
@@ -119,6 +133,11 @@ List *processing_file (char *input, int size)
                     break;
                 case DEBT:
                     sscanf(start_field ,"%d", &row->debt);
+                    if (check_debt(start_field, len-1))
+                    {
+                        printf("Warning! wrong debt for ID %d, This row cannot be accepted.\n", row->id);
+                        goto err;
+                    }
                     if (row->debt == 0)
                     {
                         printf("Warning! debt for ID %d is not found, This row cannot be accepted.\n", row->id);
@@ -259,6 +278,11 @@ Select *check_select_query (char *input)
             }
             break;
         case DEBT:
+            if (*p && *p != '-' && (*p < '0' || *p > '9'))
+            {
+                snprintf(input, 20, "Wrong debt.\n");
+                goto err;
+            }            
             sscanf(p, "%d", &query->to_test_num[0]);
             break;
         case DATE:
@@ -311,6 +335,7 @@ List *add_new_row (char *input)
 
         start = p;
         len = 0;
+        
         while (*p && *p != ',') 
         {
             if (*p == '\n' && i < 5 )
@@ -349,6 +374,11 @@ List *add_new_row (char *input)
                 break;
             case DEBT:
                 new->debt = atoi(start);
+                if (check_debt(start, len-1))
+                {
+                    snprintf(input, 70, "Wrong debt for ID %d, This row cannot be accepted.\n", new->id);
+                    goto err;
+                }
                 if (new->debt == 0)
                 {
                     snprintf(input, 70, "Debt for ID %d is not found, This row cannot be accepted.\n", new->id);
