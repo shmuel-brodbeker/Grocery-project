@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         }
 
         memset(buffer, 0, sizeof(buffer));
-        puts("\nEnter five commands. Begin with: select, set, print, quit\n");
+        puts("\nEnter 5 commands. Begin with: select, set, print, quit\n");
         
         for (i = 0; i < 5; i++)
         {
@@ -91,6 +91,7 @@ int main(int argc, char **argv)
             printf(" Query %d:\n", j+1);
             
             do {
+                memset(buffer, 0, sizeof(buffer));
                 n = recv(sockfd[j], buffer[j], MAX_LEN, 0);
                 if (n < 0)
                 {
@@ -99,7 +100,6 @@ int main(int argc, char **argv)
                 }
                 buffer[j][n] = '\0'; 
                 printf("%s\n", buffer[j]);
-                memset(buffer, 0, sizeof(buffer));
             } while (n > 0);
         }
 

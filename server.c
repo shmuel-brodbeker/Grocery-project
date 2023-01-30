@@ -91,6 +91,7 @@ void send_for_processing (char *buffer, int max_len, int socket)
         Select *selection = check_select_query (buffer + strlen(command) + 1);
         if (selection)
         {
+            puts("Test"); //
             int counter = 0;
             send_selection (head, socket, selection, &counter);
             
@@ -101,9 +102,13 @@ void send_for_processing (char *buffer, int max_len, int socket)
         }
         else
         {
-            snprintf(buffer, MAX_LEN, "Error. Usage: <field name> <parameter: <, >, =, != > <your selection>\n");
-            return;
+            strcpy(buffer, buffer + strlen(command) + 1);
         }
+        // else
+        // {
+        //     snprintf(buffer, MAX_LEN, "Error. Usage: <field name> <parameter: <, >, =, != > <your selection>\n");
+        //     return;
+        // }
     }
     else if (!strcmp(command, "set"))
     {

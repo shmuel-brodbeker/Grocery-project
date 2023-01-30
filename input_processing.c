@@ -227,11 +227,19 @@ Select *check_select_query (char *input)
     {
         case FIRST_N:
             sscanf(p, "%19[^\t\n]", query->to_test_str);
-            check_name(query->to_test_str, strlen(query->to_test_str));
+            if (check_name(query->to_test_str, strlen(query->to_test_str)))
+            {
+                snprintf(input, 20, "Invalid name\n");
+                goto err;
+            }
             break;
         case LAST_N:
             sscanf(p, "%19[^\t\n]", query->to_test_str);
-            check_name(query->to_test_str, strlen(query->to_test_str));
+            if (check_name(query->to_test_str, strlen(query->to_test_str)))
+            {
+                snprintf(input, 20, "Invalid name\n");
+                goto err;
+            }
             break;
         case ID:
             sscanf(p, "%d", &query->to_test_num[0]);
@@ -244,6 +252,11 @@ Select *check_select_query (char *input)
             break;
         case PHONE:
             sscanf(p, "%19[^\t\n]", query->to_test_str);
+            if (check_phone (query->to_test_str, strlen(query->to_test_str)))
+            {
+                snprintf(input, 20, "Invalid phone\n");
+                goto err;
+            }
             break;
         case DEBT:
             sscanf(p, "%d", &query->to_test_num[0]);
