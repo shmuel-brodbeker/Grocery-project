@@ -45,6 +45,10 @@ void get_query (List **head)
                 if (counter == 0)
                     puts("No data found to display");
             }
+            else
+            {
+                printf("%s", query + strlen(command) + 1);
+            }
         }
         else if (!strcmp(command, "set"))
         {
@@ -53,6 +57,10 @@ void get_query (List **head)
             {
                 new = is_id_exist(new, head);
                 add_to_list (new, head);
+            }
+            else
+            {
+                printf("%s", query + strlen(command) + 1);
             }
         }
         else if (!strcmp(command, "print"))

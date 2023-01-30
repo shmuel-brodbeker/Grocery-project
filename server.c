@@ -25,38 +25,6 @@ int insert_node_to_buf (char *buf, int rest, List *node)
     return strlen(x); 
 }
 
-// void insert_selection_to_buf (char *buf, int buf_len, Select *selection, int *counter)
-// {
-//     List *temp = head;
-//     int len = 0;
-//     memset (buf, 0, buf_len);
-
-//     while (temp)
-//     {
-//         if (printing_approved(selection, temp) == 0)
-//         {
-//             len += insert_node_to_buf (buf + len, buf_len - len, temp);
-//             (*counter)++;
-//         }
-//         temp = temp->next;
-//     }
-//     buf[len] = '\0';
-// }
-
-// void insert_list_to_buf (char *buf, int buf_len)
-// {
-//     List *temp = head;
-//     int len = 0;
-//     memset (buf, 0, buf_len);
-
-//     while (temp)
-//     {
-//         len += insert_node_to_buf(buf + len, buf_len - len, temp); 
-//         temp = temp->next;
-//     }
-//     buf[len] = '\0';
-// }
-
 void send_selection (List *head, int socket, Select *selection, int *counter)
 {
     char buf [MAX_LEN];
@@ -124,7 +92,6 @@ void send_for_processing (char *buffer, int max_len, int socket)
         if (selection)
         {
             int counter = 0;
-            // insert_selection_to_buf (buffer, MAX_LEN, selection, &counter);
             send_selection (head, socket, selection, &counter);
             
             if (counter == 0)
@@ -148,7 +115,8 @@ void send_for_processing (char *buffer, int max_len, int socket)
             snprintf(buffer, MAX_LEN, "New record added successfully\n");
             return;
         }
-        snprintf(buffer, MAX_LEN, "Error. New record not added\n");
+        strcpy(buffer, buffer + strlen(command) + 1);
+        // snprintf(buffer, MAX_LEN, "Error. New record not added\n");
     }
     else if (!strcmp(command, "print"))
     {
@@ -157,7 +125,6 @@ void send_for_processing (char *buffer, int max_len, int socket)
             snprintf(buffer, MAX_LEN, "List is empty\n");
             return;
         }
-        // insert_list_to_buf (buffer, MAX_LEN);
         send_list (head, socket);
         snprintf(buffer, MAX_LEN, "\n============ End list ===========\n");
     }
@@ -258,7 +225,7 @@ int main (int argc, char **argv)
     read_file(file, &head);
     fclose(file);
 
-    // ------------------------------------------
+    // ----------- print in server --------------
     printf("\n%s List of debt %s\n", LINE, LINE);
     print_list(head);
     printf("%s%s%s\n", LINE, LINE, LINE);
@@ -266,7 +233,7 @@ int main (int argc, char **argv)
     
     get_query(atoi(argv[2]));
     
-    free_list(head); // need to do an exit function
+    free_list(head); // their is not an exit function
     
     return 0;
 }

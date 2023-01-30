@@ -8,10 +8,10 @@ run: input.o input_processing.o db_operations.o
 	@gcc -g input.o input_processing.o db_operations.o -o grocery && ./grocery db3.csv
 
 run_server: server.o input_processing.o db_operations.o
-	@gcc -g server.o -lpthread input_processing.o db_operations.o -o server && ./server db4.csv 12366
+	@gcc -g server.o -lpthread input_processing.o db_operations.o -o server && ./server db4.csv 12367
 
 run_client: client.o
-	gcc -g client.o -o client && ./client 12366
+	gcc -g client.o -o client && ./client 12367
 
 server: server.o input_processing.o db_operations.o
 	gcc -g server.o -lpthread input_processing.o db_operations.o -o server

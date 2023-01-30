@@ -53,6 +53,11 @@ int main(int argc, char **argv)
         for (i = 0; i < 5; i++)
         {
             fgets(buffer[i], MAX_LEN, stdin);
+            if (strlen(buffer[i]) < 3)
+            {
+                i--;
+                continue;
+            }
             if (!strncmp(buffer[i], "quit", 4))
             {
                 puts ("Exiting... have a good day");
@@ -65,11 +70,6 @@ int main(int argc, char **argv)
             if (!strncmp(buffer[i], "send", 4))
             {
                 break;
-            }
-            if (strlen(buffer[i]) < 2)
-            {
-                i--;
-                continue;
             }
         }
 

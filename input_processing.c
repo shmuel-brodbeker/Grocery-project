@@ -109,6 +109,7 @@ List *processing_file (char *input, int size)
                     sscanf(start_field ,"%d", &row->id);
                     if (len != 9 || row->id <= 0 || check_id(start_field))
                     {
+                        // snprintf(input, 60, "Warning! wrong ID %d, This row cannot be accepted.\n", row->id);
                         printf("Warning! wrong ID %d, This row cannot be accepted.\n", row->id);
                         goto err;
                     }
@@ -190,7 +191,8 @@ Select *check_select_query (char *input)
     Select *query = calloc(1, sizeof(Select));
     if (!query)
     {
-        puts("An error has occurred, try again.");
+        snprintf(input, 40, "An error has occurred, try again.\n");
+        // puts("An error has occurred, try again.");
         return NULL; 
     }
     
@@ -203,7 +205,8 @@ Select *check_select_query (char *input)
     query->field = found_filed(&p);
     if (query->field < 0)
     {
-        puts("Error. field name unidentified.");
+        snprintf(input, 40, "Error. field name unidentified.\n");
+        // puts("Error. field name unidentified.");
         free(query);
         return NULL;
     }
@@ -234,7 +237,8 @@ Select *check_select_query (char *input)
             sscanf(p, "%d", &query->to_test_num[0]);
             if (query->to_test_num[0] < 0)
             {
-                puts("Invalid ID");
+                snprintf(input, 20, "Invalid ID\n");
+                // puts("Invalid ID");
                 goto err;
             }
             break;
@@ -249,12 +253,14 @@ Select *check_select_query (char *input)
                     &query->to_test_num[1], &query->to_test_num[2]);
             if (check_date(query->to_test_num))
             {
-                puts("Invalid date. usage: **/**/****");
+                snprintf(input, 40, "Invalid date. usage: dd/mm/yyyy\n");
+                // puts("Invalid date. usage: dd/mm/yyyy");
                 goto err;
             }
             break;
         default:
-            puts("Error. usage: <field name> <parameter: <, >, =, != > <your selection>");
+            snprintf(input, 80, "Error. usage: <field name> <parameter: <, >, =, != > <your selection>\n");
+            // puts("Error. usage: <field name> <parameter: <, >, =, != > <your selection>");
             goto err;
     }
     return query;
@@ -296,14 +302,16 @@ List *add_new_row (char *input)
         {
             if (*p == '\n' && i < 5 )
             {
-                puts("Too few fields");
+                snprintf(input, 20, "Too few fields\n");
+                // puts("Too few fields");
                 goto err;
             }
             p++; len++;
         }
         if (len == 0) 
         {
-            puts("Error. empty field");
+            snprintf(input, 25, "Error. empty field\n");
+            // puts("Error. empty field");
             goto err;
         }
         switch (cur_field)
@@ -318,7 +326,8 @@ List *add_new_row (char *input)
                 sscanf(start ,"%d", &new->id);
                 if (len != 9 || new->id <= 0 || check_id(start))
                 {
-                    printf("Wrong ID %d, This row cannot be accepted.\n", new->id);
+                    snprintf(input, 60, "Warning! wrong ID %d, This row cannot be accepted.\n", new->id);
+                    // printf("Wrong ID %d, This row cannot be accepted.\n", new->id);
                     goto err;
                 }
                 break;
@@ -329,7 +338,8 @@ List *add_new_row (char *input)
                 new->debt = atoi(start);
                 if (new->debt == 0)
                 {
-                    printf("Debt for ID %d is not found, This row cannot be accepted.\n", new->id);
+                    snprintf(input, 70, "Debt for ID %d is not found, This row cannot be accepted.\n", new->id);
+                    // printf("Debt for ID %d is not found, This row cannot be accepted.\n", new->id);
                     goto err;
                 }
                 break;
@@ -337,7 +347,8 @@ List *add_new_row (char *input)
                 sscanf(start ,"%d%*c%d%*c%d", &new->date[0], &new->date[1],&new->date[2]);
                 break;
             default:
-                puts("Error. field name unidentified.");
+                snprintf(input, 40, "Error. field name unidentified.\n");
+                // puts("Error. field name unidentified.");
                 goto err;
         }
         start = p+1;
