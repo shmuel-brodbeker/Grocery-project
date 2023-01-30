@@ -63,7 +63,7 @@ int main(int argc, char **argv)
                 puts ("Exiting... have a good day");
                 for (int j = 0; j < 5; j++)
                 {
-                    close(sockfd[j]); // dose i need to close befor exiting
+                    close(sockfd[j]);
                 }
                 return 0;
             }
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
                     break; 
                 }
                 buffer[j][n] = '\0'; 
-                printf("%s\n", buffer[j]);
+                printf("%s", buffer[j]);
             } while (n > 0);
         }
 

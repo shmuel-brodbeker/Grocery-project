@@ -79,7 +79,7 @@ void send_list (List *head, int socket)
 void send_for_processing (char *buffer, int max_len, int socket)
 {
     char command[30] = {0};
-    sscanf(buffer, "%s", command);
+    sscanf(buffer, "%29s", command);
 
     if (!strcmp(command, "select"))
     {
