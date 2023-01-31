@@ -3,18 +3,29 @@ GROCERY APP
 This program loads and displays customer data and their outstanding balances.
 and enables the registration of new customers, as well as debts and payments to existing customers.
 
+In the second version, you can send questions from a client program to a local server through an agreed port, and receive up to five answers from the server at once.
+
 COMPILE and RUN
 By file "Makefile" that is among the project files.
-command "make" in the terminal will compile the program with gcc and run it together with the base database.
+command "make run" in the terminal will compile the program with gcc and run it together with the base database.
+
+To run the server-client version, enter "make run_server" to activate the server side, and then "make run_client" to activate the client side in a new terminal.
 
 STRUCTURE OF PROGRAM
 The program contains three files:
     
-    A. The "input" file, from which the program is opened ( Main ). is called the database file, and an option to enter queries is opened.
+    A. The "input.c" file, from which the program is opened ( Main ). is called the database file, and an option to enter queries is opened.
 
-    B. The input_processing file , where incoming input is processed, both from the database and from user queries. Functions of this file return the information arranged and packaged in a struct ready for updating and printing.
+    B. The "input_processing.c" file , where incoming input is processed, both from the database and from user queries. Functions of this file return the information arranged and packaged in a struct ready for updating and printing.
     
-    C. db_operation file , which performs operations on the internal database. Constructs a sorted linked list. Updates debts for existing customers, and prints the entire list upon request.
+    C. "db_operation.c" file , which performs operations on the internal database. Constructs a sorted linked list. Updates debts for existing customers, and prints the entire list upon request.
+
+The server-client version contain: 
+
+    A. "server.c" file, contain the input commands from the client and sending to it.
+        server.c that compile together with "input_processing.c" and "db_operation.c".
+    
+    B. "client.c" file, Contains commands to send to the server, and print the received input.
 
 realization
 This program was written entirely by me in accordance with the instructions given by JBH, in the Beit Shemesh 2023 junior course.
