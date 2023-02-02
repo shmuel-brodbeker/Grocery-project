@@ -40,11 +40,6 @@ int main(int argc, char **argv)
                 perror("Error creating socket");
                 return 1;
             }
-            if (connect(sockfd[i], (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
-            {
-                perror("Error connecting");
-                return 1;
-            }
         }
 
         memset(buffer, 0, sizeof(buffer));
@@ -58,6 +53,7 @@ int main(int argc, char **argv)
                 i--;
                 continue;
             }
+
             if (!strncmp(buffer[i], "quit", 4))
             {
                 puts ("Exiting... have a good day");
@@ -67,12 +63,21 @@ int main(int argc, char **argv)
                 }
                 return 0;
             }
+
             if (!strncmp(buffer[i], "send", 4))
             {
                 break;
             }
+
+            /* Connect to server */
+            if (connect(sockfd[i], (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
+            {
+                perror("Error connecting");
+                return 1;
+            }
         }
 
+        /* Send query */
         for (j = 0; j < i; j++)
         {
             n = send(sockfd[j], buffer[j], strlen(buffer[j]) - 1, 0);
@@ -83,8 +88,7 @@ int main(int argc, char **argv)
             }
         }
 
-        /* ---------- Waiting for reply ---------- */
-
+        /* Receive a response from the server */
         puts("\n========= server sending ==========");
         for (j = 0; j < i; j++)
         {
