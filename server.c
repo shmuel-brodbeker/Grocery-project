@@ -11,9 +11,13 @@
 
 #define MAX_LEN 1024
 #define MIN_OF(_a, _b) ((_a < _b) ? _a : _b)
-#define LINE "============="
+#define LINE "=============" 
 
-List *head = NULL; // global head
+struct Server_param
+{
+    List *head;
+    int sock;
+};
 
 int insert_node_to_buf (char *buf, int rest, List *node)
 {
@@ -53,37 +57,38 @@ void send_selection (List *head, int socket, Select *selection, int *counter)
     }
 }
 
-void send_list (List *head, int socket)
+void send_list (struct Server_param *sp)
 {
+    List *p_head = sp->head;
     char buf [MAX_LEN];
     int len, n;
-    while (head)
+    while (p_head)
     {
         memset (buf, 0, sizeof(buf));
         for (int i = 0, len = 0; i < 5; i++) // send 5 lines together
         {
-            if (!head)
+            if (!p_head)
                 break;
-            len += insert_node_to_buf(buf + len, MAX_LEN - len, head); 
-            head = head->next;
+            len += insert_node_to_buf(buf + len, MAX_LEN - len, p_head); 
+            p_head = p_head->next;
         }
-        n = send (socket, buf, strlen(buf), 0);
+        n = send (sp->sock, buf, strlen(buf), 0);
         if (n < 0)
         {
             perror("Server error sending data");
-            close(socket);
+            close(sp->sock);
         }
     }
 }
 
-void send_for_processing (char *buffer, int max_len, int socket)
+void send_for_processing (char *buffer, int max_len, struct Server_param *sp)
 {
     char command[30] = {0};
     sscanf(buffer, "%29s", command);
 
     if (!strcmp(command, "select"))
     {
-        if (!head)
+        if (!sp->head)
         {
             snprintf(buffer, MAX_LEN, "List is empty\n");
             return;
@@ -92,7 +97,7 @@ void send_for_processing (char *buffer, int max_len, int socket)
         if (selection)
         {
             int counter = 0;
-            send_selection (head, socket, selection, &counter);
+            send_selection (sp->head, sp->sock, selection, &counter);
             
             if (counter == 0)
                 snprintf(buffer, MAX_LEN, "No data found to display\n");
@@ -109,8 +114,8 @@ void send_for_processing (char *buffer, int max_len, int socket)
         List *new = add_new_row(buffer + strlen(command) + 1);
         if (new)
         {
-            new = is_id_exist(new, &head);
-            add_to_list (new, &head);
+            new = is_id_exist(new, &sp->head);
+            add_to_list (new, &sp->head);
             snprintf(buffer, MAX_LEN, "New record added successfully\n");
             return;
         }
@@ -118,12 +123,12 @@ void send_for_processing (char *buffer, int max_len, int socket)
     }
     else if (!strcmp(command, "print"))
     {
-        if (!head)
+        if (!sp->head)
         {
             snprintf(buffer, MAX_LEN, "List is empty\n");
             return;
         }
-        send_list (head, socket);
+        send_list (sp);
         snprintf(buffer, MAX_LEN, "\n============ End list ===========\n");
     }
     else
@@ -134,31 +139,31 @@ void send_for_processing (char *buffer, int max_len, int socket)
 
 void *conn_handler(void *args)
 {
+    struct Server_param *sp = args;
     char buffer[MAX_LEN];
     int n;
-    int new_sock = (int)args; 
 
-    n = recv(new_sock, buffer, MAX_LEN, 0);
+    n = recv(sp->sock, buffer, MAX_LEN, 0);
     if (n < 0)
     {
         perror("Server error receiving data");
         goto exit;
     }
     buffer[n] = '\0';
-    send_for_processing(buffer, MAX_LEN, new_sock); 
+    send_for_processing(buffer, MAX_LEN, sp); 
 
-    n = send(new_sock, buffer, strlen(buffer), 0);
+    n = send(sp->sock, buffer, strlen(buffer), 0);
     if (n < 0)
     {
         perror("Server error sending data");
         goto exit;
     }
 exit:
-    close(new_sock);
+    close(sp->sock);
     return NULL;
 }
 
-int get_query (int port)
+int get_query (struct Server_param *sp)
 {
     int sockfd;
     struct sockaddr_in server_addr, client_addr;
@@ -176,7 +181,7 @@ int get_query (int port)
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(port);
+    server_addr.sin_port = htons(sp->sock);
     if (bind(sockfd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0)
     {
         perror("Error binding socket");
@@ -193,14 +198,14 @@ int get_query (int port)
     while (1)
     {
         pthread_t tid;
-        int new_sock = accept(sockfd, (struct sockaddr *)&client_addr, (socklen_t*)&len);
-        if (new_sock < 0)
+        sp->sock = accept(sockfd, (struct sockaddr *)&client_addr, (socklen_t*)&len);
+        if (sp->sock < 0)
         {
             perror("accept failed");
             return 1;
         }
 
-        pthread_create(&tid, NULL, conn_handler, (void *)new_sock);
+        pthread_create(&tid, NULL, conn_handler, (void *)sp); 
         pthread_join(tid, NULL);
     }
     return 0;
@@ -214,24 +219,29 @@ int main (int argc, char **argv)
         return 1;
     }
     
+    struct Server_param sp = {
+        .head = NULL,
+        .sock = atoi(argv[2])
+    };
+    
     FILE *file = fopen(argv[1], "r");
     if (!file)
     {
         puts("File not found");
         return 1;
     }
-    read_file(file, &head);
+    read_file(file, &sp.head);
     fclose(file);
 
     // ----------- print in server --------------
     printf("\n%s List of debt %s\n", LINE, LINE);
-    print_list(head);
+    print_list(sp.head);
     printf("%s%s%s\n", LINE, LINE, LINE);
     // ------------------------------------------
+
+    get_query(&sp);
     
-    get_query(atoi(argv[2]));
-    
-    free_list(head); // their is not an exit function
+    free_list(sp.head); // their is not an exit function
     
     return 0;
 }
