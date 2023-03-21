@@ -4,8 +4,9 @@
 
 #include "db_operations.h"
 #include "input_processing.h"
+#include "check_functions.h"
 
-void free_list (List *head)
+void free_list(List *head)
 {
     if (!head)
         return;
@@ -13,41 +14,15 @@ void free_list (List *head)
     free(head);
 }
 
-int cmp_date (int a[3], int b[3])
-{
-    if (a[2] > b[2])
-        return 1;
-    else if (a[2] < b[2])
-        return -1;
-    else // the same year
-    {
-        if (a[1] > b[1])
-            return 1;
-        else if (a[1] < b[1])
-            return -1;
-        else // the same month
-        {
-            if (a[0] > b[0])
-                return 1;
-            else if (a[0] < b[0])
-                return -1;
-            else // the same date
-            {
-                return 0;
-            }
-        }
-    }
-}
-
 void print_node(List *head)
 {
     if (!head)
         return;
-    printf("%s %s, %s, ID: %09d  \n  ", head->first_name, head->last_name, head->phone, head->id);
-    printf("\t-> debt: %d \n\t-> date: %d/%d/%d \n",head->debt, head->date[0], head->date[1], head->date[2]);
+    printf("%s %s, %s, ID: %09d\n  ", head->first_name, head->last_name, head->phone, head->id);
+    printf("\t-> debt: %d\n\t-> date: %d/%d/%d \n", head->debt, head->date[0], head->date[1], head->date[2]);
 }
 
-void print_list (List *head)
+void print_list(List *head)
 {
     if (!head)
         return;
@@ -55,60 +30,60 @@ void print_list (List *head)
     print_list(head->next);
 }
 
-int cmp (int res, char parameter)  
+int need_to_print(int res, char parameter)
 {
     // Gets a comparison result
     // and returns if to print
     switch (parameter)
     {
         case '<':
-            return (res < 0) ? 0 : 1 ;
+            return (res < 0) ? 0 : 1;
         case '>':
-            return (res > 0) ? 0 : 1 ;
+            return (res > 0) ? 0 : 1;
         case '=':
-            return (res == 0) ? 0 : 1 ;
+            return (res == 0) ? 0 : 1;
         case '!':
-            return (res != 0) ? 0 : 1 ;
+            return (res != 0) ? 0 : 1;
         default:
-            return 1 ;
+            return 1;
     }
 }
 
-int printing_approved (Select *pro_query, List *head)
+int printing_approved(Select *s, List *head)
 {
     if (!head)
         return 1;
 
-    switch (pro_query->field)
+    switch (s->field)
     {
         case FIRST_N:
-            if (!cmp (strcmp(head->first_name, pro_query->to_test_str), pro_query->parameter))
+            if (!need_to_print(strcmp(head->first_name, s->fieldInfo.name), s->parameter))
                 return 0;
             break;
         case LAST_N:
-            if (!cmp (strcmp(head->last_name, pro_query->to_test_str), pro_query->parameter))
+            if (!need_to_print(strcmp(head->last_name, s->fieldInfo.name), s->parameter))
                 return 0;
             break;
         case ID:
-            if (!cmp(head->id - pro_query->to_test_num[0], pro_query->parameter))
+            if (!need_to_print(head->id - s->fieldInfo.id, s->parameter))
                 return 0;
             break;
         case PHONE:
-            if (!cmp (strcmp(head->phone, pro_query->to_test_str), pro_query->parameter))
+            if (!need_to_print(strcmp(head->phone, s->fieldInfo.name), s->parameter))
                 return 0;
             break;
         case DEBT:
-            if (!cmp(head->debt - pro_query->to_test_num[0], pro_query->parameter))
+            if (!need_to_print(head->debt - s->fieldInfo.debt, s->parameter))
                 return 0;
             break;
         case DATE:
-            if (!cmp(cmp_date(head->date, pro_query->to_test_num), pro_query->parameter))
+            if (!need_to_print(cmp_date(head->date, s->fieldInfo.date), s->parameter))
                 return 0;
     }
     return 1;
 }
 
-void update_row (List *a, List *b)
+void update_row(List *a, List *b)
 {
     a->debt += b->debt;
     if (cmp_date(a->date, b->date) < 0)
@@ -124,7 +99,7 @@ List *is_id_exist(List *row, List **head)
 {
     List **pNext = head;
     List *temp;
-    
+
     if (!row)
         return NULL;
 
@@ -143,10 +118,10 @@ List *is_id_exist(List *row, List **head)
     return row;
 }
 
-void add_to_list (List *row, List **head)
+void add_to_list(List *row, List **head)
 {
     List **temp = head;
-    
+
     if (!row)
     {
         return;
@@ -168,9 +143,9 @@ void add_to_list (List *row, List **head)
     }
 }
 
-void read_file (FILE *file, List **head)
+void read_file(FILE *file, List **head)
 {
-    char input[250] = {0};
+    char input[INPUT_MAX_SIZE] = {0};
     List *row = NULL;
 
     while (fgets(input, sizeof(input), file))
@@ -179,8 +154,7 @@ void read_file (FILE *file, List **head)
         if (row)
         {
             row = is_id_exist(row, head);
-            add_to_list (row, head);
+            add_to_list(row, head);
         }
     }
 }
-

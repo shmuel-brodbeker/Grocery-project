@@ -42,6 +42,7 @@ void get_query (List **head)
             {
                 int counter = 0;
                 print_query (pro_query, *head, &counter);
+                free (pro_query);
                 if (counter == 0)
                     puts("No data found to display");
             }

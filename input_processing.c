@@ -2,108 +2,34 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "check_functions.h"
 #include "db_operations.h"
 
 #define MIN_OF(_a, _b) ((_a < _b) ? _a : _b)
 
-int check_name(char *str, int len)
+void skip_spaces(char **p)
 {
-    if (len == 0)
-        return 1;
-
-    for (int i = 0; i < len; i++)
-    {
-        // Checks for valid characters in a name
-        if (str[i] >= 'a' && str[i] <= 'z')
-            continue;
-
-        if (str[i] == ' ' || str[i] == '_')
-            continue;
-
-        if (str[i] >= 'A' && str[i] <= 'Z')
-        {
-            str[i] += ('a' - 'A');
-        }
-        else
-        {
-            strcpy(str, "<Invalid name>");
-            return 1;
-        }
-    }
-    return 0;
-}    
-
-int check_phone (char *str, int len)
-{
-    if (str[0] != '0' || len != 10)
-    {
-        strcpy(str, "<rng num>");
-        return 1;
-    }
-    for (int i = 0; i < len; i++)
-    {
-        if (str[i] < '0' || str[i] > '9')
-        {
-            strcpy(str, "<rng num>");
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int check_id (char *start)
-{
-    char *p = start;
-    for (int i = 0; i < 9; i++, p++)
-    {
-        if (*p < '0' || *p > '9')
-            return 1;
-    }
-    return 0;
-}
-
-int check_debt (char *start, int len)
-{
-    char *p = start;
-    for (int i = 0; i < len; i++, p++)
-    {
-        if (i == 0 && *p == '-' && len > 1)
-            continue;
-        
-        if (*p < '0' || *p > '9')
-            return 1;
-    }
-    return 0;
-}
-
-int check_date (int *date)
-{
-    int d = date[0], m = date[1], y = date[2];
-    if (d < 0 || d > 31 || m < 0 || m > 12 || y < 1900 || y > 2200)
-    {
-        // for invalid date i reset it NULL
-        // The information about the debt is not deleted
-        date[0] = 0, date[1] = 0, date[2] = 0;
-        return 1;
-    }
-    return 0;
+    while(**p == ' ')
+        (*p)++;
 }
 
 List *processing_file (char *input, int size)
 {
-    List *row;
+    List *node;
     char *start_field = input, *p = input;
     int active_field = FIRST_N;
     int len = 0;
 
-    row = calloc(1, sizeof(List));
-    if (!row)
+    node = calloc(1, sizeof(List));
+    if (!node)
     {
-        return NULL;
+        printf("Memory allocation error. try again\n");
+        return NULL; 
     }
 
     for (int i = 0; i < size; i++, p++, len++)
     {
+        // P run on the string until fount a comma
         if (*p == '\n' && active_field < DATE)
         {
             goto err;
@@ -114,37 +40,32 @@ List *processing_file (char *input, int size)
             switch (active_field)
             {
                 case FIRST_N:
-                    strncpy(row->first_name, start_field, MIN_OF(len, sizeof(row->first_name)));
+                    strncpy(node->first_name, start_field, MIN_OF(len, sizeof(node->first_name))); // dynamic, merge rows
                     break;
                 case LAST_N:
-                    strncpy(row->last_name, start_field, MIN_OF(len, sizeof(row->last_name)));
+                    strncpy(node->last_name, start_field, MIN_OF(len, sizeof(node->last_name)));
                     break;
                 case ID:
-                    sscanf(start_field ,"%d", &row->id);
-                    if (len != 9 || row->id <= 0 || check_id(start_field))
+                    sscanf(start_field ,"%d", &node->id);
+                    if (len != 9 || node->id <= 0 || check_id(start_field))
                     {
-                        printf("Warning! wrong ID %d, This row cannot be accepted.\n", row->id);
+                        printf("Warning! wrong ID %d, This row cannot be accepted.\n", node->id);
                         goto err;
                     }
                     break;
                 case PHONE:
-                    strncpy(row->phone, start_field, len);
+                    strncpy(node->phone, start_field, len);
                     break;
                 case DEBT:
-                    sscanf(start_field ,"%d", &row->debt);
-                    if (check_debt(start_field, len-1))
+                    sscanf(start_field ,"%d", &node->debt);
+                    if (check_debt(start_field, len-1) || node->debt == 0)
                     {
-                        printf("Warning! wrong debt for ID %d, This row cannot be accepted.\n", row->id);
-                        goto err;
-                    }
-                    if (row->debt == 0)
-                    {
-                        printf("Warning! debt for ID %d is not found, This row cannot be accepted.\n", row->id);
+                        printf("Warning! wrong debt for ID %d, This row cannot be accepted.\n", node->id);
                         goto err;
                     }
                     break;
                 case DATE:
-                    sscanf(start_field ,"%d%*c%d%*c%d", &row->date[0], &row->date[1],&row->date[2]);
+                    sscanf(start_field ,"%hu%*c%hu%*c%hu", &node->date[0], &node->date[1],&node->date[2]);
                     break;
            }
             active_field++;
@@ -157,24 +78,24 @@ List *processing_file (char *input, int size)
             break;
         }
     }
-    check_name (row->first_name, strlen(row->first_name));
-    check_name (row->last_name, strlen(row->last_name));
-    check_phone(row->phone, strlen(row->phone));
-    check_date(row->date);
-    
-    return row;
+
+    if (check_node(node))
+    {
+        goto err;
+    }
+    return node;
 
 err:
-    free(row);
+    free(node);
     return NULL;
 }
 
-int found_filed (char **p)
+int find_filed (char **p)
 {
     char *fields[] = {"first name", "last name", "id", "phone", "debt", "date"};
-    int len = 0;
     char field[11] = {0};
     char *np = *p;
+    int len = 0;
 
     while ((*np >= 'a' && *np <= 'z') || *np == ' ')
     {
@@ -188,18 +109,18 @@ int found_filed (char **p)
     *p = np;
 
     if (!strncmp(field, fields[0], strlen(fields[0])))
-        return 0;
+        return FIRST_N;
     else if (!strncmp(field, fields[1], strlen(fields[1])) 
         || !strcmp(field, "second name"))
-        return 1;
+        return LAST_N;
     else if (!strncmp(field, fields[2], strlen(fields[2])))
-        return 2;
+        return ID;
     else if (!strncmp(field, fields[3], strlen(fields[3])))
-        return 3;
+        return PHONE;
     else if (!strncmp(field, fields[4], strlen(fields[4])))
-        return 4;
+        return DEBT;
     else if (!strncmp(field, fields[5], strlen(fields[5])))
-        return 5;
+        return DATE;
     else
         return -1;
 }
@@ -214,59 +135,52 @@ Select *check_select_query (char *input)
     }
     
     char *p = input;
-    while(*p == ' ')
-    {
-        p++;
-    }
+    skip_spaces(&p);
 
-    query->field = found_filed(&p);
+    query->field = find_filed(&p);
     if (query->field < 0)
     {
         snprintf(input, 40, "Error. field name unidentified.\n");
         goto err;
     }
+    skip_spaces(&p);
 
-    while(*p == ' ')
-    {
-        p++;
-    }
     query->parameter = *p;
     if (*p == '!')
         p++;    
 
-    do {
-        p++;
-    } while (*p == ' ');
+    p++;
+    skip_spaces(&p);
 
     switch(query->field)
-    {
+    { 
         case FIRST_N:
-            sscanf(p, "%19[^\t\n]", query->to_test_str);
-            if (check_name(query->to_test_str, strlen(query->to_test_str)))
+            sscanf(p, "%19[^\t\n]", query->fieldInfo.name);
+            if (check_name(query->fieldInfo.name))
             {
                 snprintf(input, 20, "Invalid name\n");
                 goto err;
-            }
+            } 
             break;
         case LAST_N:
-            sscanf(p, "%19[^\t\n]", query->to_test_str);
-            if (check_name(query->to_test_str, strlen(query->to_test_str)))
+            sscanf(p, "%19[^\t\n]", query->fieldInfo.name);
+            if (check_name(query->fieldInfo.name))
             {
                 snprintf(input, 20, "Invalid name\n");
                 goto err;
             }
             break;
         case ID:
-            sscanf(p, "%d", &query->to_test_num[0]);
-            if (query->to_test_num[0] < 0)
+            sscanf(p, "%d", &query->fieldInfo.id);
+            if (query->fieldInfo.id < 0)
             {
                 snprintf(input, 20, "Invalid ID\n");
                 goto err;
             }
             break;
         case PHONE:
-            sscanf(p, "%19[^\t\n]", query->to_test_str);
-            if (check_phone (query->to_test_str, strlen(query->to_test_str)))
+            sscanf(p, "%19[^\t\n]", query->fieldInfo.phone);
+            if (check_phone (query->fieldInfo.phone))
             {
                 snprintf(input, 20, "Invalid phone\n");
                 goto err;
@@ -278,12 +192,12 @@ Select *check_select_query (char *input)
                 snprintf(input, 20, "Wrong debt.\n");
                 goto err;
             }            
-            sscanf(p, "%d", &query->to_test_num[0]);
+            sscanf(p, "%d", &query->fieldInfo.debt);
             break;
         case DATE:
-            sscanf(p, "%d%*c%d%*c%d", &query->to_test_num[0], 
-                    &query->to_test_num[1], &query->to_test_num[2]);
-            if (check_date(query->to_test_num))
+            sscanf(p, "%hd%*c%hd%*c%hd", &query->fieldInfo.date[0], 
+                    &query->fieldInfo.date[1], &query->fieldInfo.date[2]);
+            if (check_date(query->fieldInfo.date))
             {
                 snprintf(input, 40, "Invalid date. usage: dd/mm/yyyy\n");
                 goto err;
@@ -316,15 +230,12 @@ List *add_new_row (char *input)
 
     for (int i = 0; i < sum_fields; i++, p++)
     {
-        while(*p == ' ')
-        {
-            p++;
-        }
-        cur_field = found_filed(&p);
+        skip_spaces(&p);
+        cur_field = find_filed(&p);
         // p point now to '='
-        do {
-            p++;
-        } while (*p == ' ');
+
+        p++;
+        skip_spaces(&p);
 
         start = p;
         len = 0;
@@ -376,7 +287,7 @@ List *add_new_row (char *input)
                 }
                 break;
             case DATE:
-                sscanf(start ,"%d%*c%d%*c%d", &new->date[0], &new->date[1],&new->date[2]);
+                sscanf(start ,"%hu%*c%hu%*c%hu", &new->date[0], &new->date[1],&new->date[2]);
                 break;
             default:
                 snprintf(input, 40, "Error. field name unidentified.\n");
@@ -384,10 +295,10 @@ List *add_new_row (char *input)
         }
         start = p+1;
 
-    check_name (new->first_name, strlen(new->first_name));
-    check_name (new->last_name, strlen(new->last_name));
-    check_phone(new->phone, strlen(new->phone));
-    check_date(new->date);
+    if (check_node(new))
+    {
+        goto err;
+    }
     
     }
     return new;
